@@ -2,8 +2,11 @@
 
 <project name="Build a WordPress Install" default="help" basedir="./">
 
+    <!-- Default property values -->
+    <property name="build.wp.version" value="latest" />
+
     <!-- Load the configuration file -->
-    <property file="build.properties" />
+    <property file="build.properties" override="true"/>
     
     <!-- set a temp dirs -->
     <property name="build.dir.tmp" value="${build.dir.wp}/tmp"/>
@@ -48,24 +51,20 @@
 
    <!--  <target name="prepare" depends="clean" description="Creating new WordPress directory"> -->
    <target name="prepare"  description="Creating new WordPress directory">
+     <echo msg="Preparing build directory" />
+     <!--  build now will not overwrite existing directories -->
+     <available file="${build.dir.wp}" type="dir" property="dirfound" value="true"/>
+     <fail if="dirfound" message="This directory already exists!" />
 
-        <echo msg="Preparing build directory" />
+     <!-- create our root location -->
+     <mkdir dir="${build.dir.wp}" />
 
-
-       <!--  build now will not overwrite existing directories -->
-        <available file="${build.dir.wp}" type="dir" property="dirfound" value="true"/>
-		<fail if="dirfound" message="This directory already exists!" />
-        
-        <!-- create our root location -->
-        <mkdir dir="${build.dir.wp}" />
-               
-        <!-- create temp directories for downloads -->
-        <mkdir dir="${build.dir.tmp}" />
-        <mkdir dir="${build.dir.tmp.plugins}" />
-        <mkdir dir="${build.dir.tmp.themes}" />
-        
+     <!-- create temp directories for downloads -->
+     <mkdir dir="${build.dir.tmp}" />
+     <mkdir dir="${build.dir.tmp.plugins}" />
+     <mkdir dir="${build.dir.tmp.themes}" />
     </target>
-    
+
     <!-- Download WordPress from .org 
 ************************************************************* -->
 	<target name="installwordpress" description="Download WordPress">
@@ -585,6 +584,40 @@
 </target>
 
 
+    <!-- Display current build variables
+************************************************************* -->
+
+  <target name="get-env" description="Display current build variables">
+    <echo msg="work dir:           ${application.startdir}" />
+    <!-- echo msg="Environment variables, extracted from $_SERVER ${env.*}" / -->
+    <echo msg="filesystem:         ${host.fstype}" />
+    <echo msg="PHP_OS:             ${host.os}" />
+    <!-- echo msg="Line separator: ${line.separator}" / -->
+    <echo msg="OS:                 ${os.name}" />
+    <echo msg="buildfile:          ${phing.file}" />
+    <echo msg="phing dir:          ${phing.dir}" />
+    <echo msg="phing home:         ${phing.home}" />
+    <echo msg="phing version:      ${phing.version}" />
+    <echo msg="phing project name: ${phing.project.name}" />
+    <echo msg="PHP_CLASSPATH:      ${php.classpath}" />
+    <echo msg="PHP_VERSION:        ${php.version}" />
+    <echo msg="project basedir:    ${project.basedir}" />
+    <echo msg="HOME:               ${user.home}" />
+    <if>
+        <equals arg1="${os.name}" arg2="Linux" />
+        <then>
+            <echo msg="---------- Linux --------------" />
+            <echo msg="OS architecture:    ${host.arch}" />
+            <echo msg="Domain name:        ${host.domain}" />
+            <echo msg="OS hostname:        ${host.name}" />
+            <echo msg="OS release version: ${host.os.release}" />
+            <echo msg="OS version:         ${host.os.version}" />
+        </then>
+    </if>
+
+    <echo msg="wordpress version:  ${build.wp.version}" />
+  </target>
+
     <!-- Display the available options 
 ************************************************************* -->
 
@@ -595,11 +628,12 @@
         <echo msg="------------------" />
         
         <echo msg="$ phing wp-install - Creates a new database, downloads and installs WordPress, Plugins and Themes" />
+        <echo msg="$ phing wp-clean - Removes Wordpress instance installed" />
         <echo msg="$ phing wp-install-only - Downloads and installs WordPress, Plugins, Themes (no database setup)" />
         <echo msg="$ phing wp-zip - creates a zip "/>
         <echo msg="$ phing wp-gzip - creates a gzip "/>
         <echo msg="$ phing wp-doc - runs PHP Documentor 2"/>
-
+        <echo msg="$ get-env - displays current environment variables" />
         
     </target>
 
